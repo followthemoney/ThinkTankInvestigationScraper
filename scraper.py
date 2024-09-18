@@ -5,11 +5,11 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import requests
 import random
-TOKEN = 'KEY'
+TOKEN = 'key'
 
 class scraper:
     def __init__(self):
-        PROXY_DATA = get_proxy()
+        PROXY_DATA = random.choice(get_proxies())
         chrome_options = Options()
         chrome_options.add_argument('--headless')  # Optional: Run in headless mode
         chrome_options.add_argument('--no-sandbox')
@@ -62,25 +62,6 @@ class scraper:
         self.driver.quit()
         return None
     
-    
-def get_proxy():
-    try:
-        response = requests.get(
-            "https://proxy.webshare.io/api/v2/proxy/list/?mode=direct&page=1&page_size=25",
-            headers={"Authorization": f"Token {TOKEN}"}
-        )
-        response.raise_for_status()  # Raise an HTTPError for bad responses
-    except requests.RequestException as e:
-        print(f"Failed to get proxy: {e}")
-        return
-    random_index = random.randint(1, 24)
-    PROXY = {
-        'ip' : response.json()['results'][random_index]['proxy_address'],
-        'port' : response.json()['results'][random_index]['port'],
-        'username' : response.json()['results'][random_index]['username'],
-        'password' : response.json()['results'][random_index]['password']
-    }
-    return PROXY
 
 def get_proxies():
     try:
@@ -92,7 +73,6 @@ def get_proxies():
     except requests.RequestException as e:
         print(f"Failed to get proxy: {e}")
         return
-    #random_index = random.randint(1, 24)
     PROXIES = []
     for res in response.json()['results']:
         PROXIES.append({
