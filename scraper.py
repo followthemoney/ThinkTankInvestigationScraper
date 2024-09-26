@@ -5,7 +5,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import requests
 import random
-TOKEN = 'key'
+TOKEN = ''
 
 class scraper:
     def __init__(self):
@@ -39,9 +39,32 @@ class scraper:
         status = self.driver.find_element(By.XPATH, "/html/body/div[3]/main/div/div[2]/div/div/article/div/div/div/table[1]/tbody/tr[3]/td[2]").text
         registered = self.driver.find_element(By.XPATH, "/html/body/div[3]/main/div/div[2]/div/div/article/div/div/div/table[1]/tbody/tr[4]/td[2]").text
         entity_type = self.driver.find_element(By.XPATH, "/html/body/div[3]/main/div/div[2]/div/div/article/div/div/div/table[2]/tbody/tr[3]/td[2]").text
-        total_budget = self.driver.find_element(By.XPATH, "/html/body/div[3]/main/div/div[2]/div/div/article/div/div/div/table[15]/tbody/tr[7]/td[2]").text #
+        country_table = self.driver.find_elements(By.CLASS_NAME, "ecl-table--zebra")[2]
+        country = country_table.find_element(By.XPATH, ".//tbody/tr[2]/td[2]/span[6]").text
+        profile = self.driver.find_element(By.ID, 'goalsremit')
+        description_table = profile.find_element(By.XPATH, "following-sibling::*")
+        description = description_table.find_elements(By.CSS_SELECTOR, '.ecl-table__body > tr')[0].find_elements(By.CSS_SELECTOR,'.ecl-table__cell')[1].text
+        name = self.driver.find_element(By.XPATH, "/html/body/div[3]/main/div/div[2]/div/div/article/div/div/div/table[1]/tbody/tr[1]/td[2]/strong").text
+        status = self.driver.find_element(By.XPATH, "/html/body/div[3]/main/div/div[2]/div/div/article/div/div/div/table[1]/tbody/tr[3]/td[2]").text
+        registered = self.driver.find_element(By.XPATH, "/html/body/div[3]/main/div/div[2]/div/div/article/div/div/div/table[1]/tbody/tr[4]/td[2]").text
+        entity_type = self.driver.find_element(By.XPATH, "/html/body/div[3]/main/div/div[2]/div/div/article/div/div/div/table[2]/tbody/tr[3]/td[2]").text
         website = self.driver.find_element(By.XPATH, "/html/body/div[3]/main/div/div[2]/div/div/article/div/div/div/table[2]/tbody/tr[4]/td[2]").text
+        funding = self.driver.find_element(By.ID, 'financial-data')
+        table = funding.find_element(By.XPATH, 'following-sibling::*')
+        table2 = table.find_elements(By.CSS_SELECTOR, '.ecl-table__body > tr')[3]
+        table_content = table2.find_elements(By.CSS_SELECTOR, 'td')[1]
+        funding_list = []
+        for el in table_content.find_elements(By.CSS_SELECTOR, '.ecl-table__cell > div > ul > li'):
+            funding_list.append(el.text)
 
+        financial_data = self.driver.find_elements(By.CLASS_NAME, "ecl-table--zebra")[14]
+        try:
+            total_budget_row = financial_data.find_element(By.XPATH, ".//tbody/tr[contains(.,'Total budget:')]")
+            total_budget_cells = total_budget_row.find_elements(By.XPATH, "./td")
+            total_budget = total_budget_cells[1].text if len(total_budget_cells) > 1 else "Not found"
+        except Exception as e:
+            total_budget = "Not found"
+            print(f"Error finding total budget with {id}: {e} ")
         comm_meetings_pdf = f"https://ec.europa.eu/transparencyregister/public/meetings/{id}/pdf"
         parl_meeting = f"https://www.europarl.europa.eu/meps/en/search-meetings?transparencyRegisterIds={id}&exportFormat=CSV"
 
@@ -51,9 +74,12 @@ class scraper:
             'registered' : registered,
             'website' : website,
             'entity_type' : entity_type,
+            'funding_source' : funding_list,
             'total_budget' : total_budget,
             'comm_meeting' : comm_meetings_pdf,
-            'parl_meeting' : parl_meeting
+            'parl_meeting' : parl_meeting,
+            'country' : country,
+            'description' : description
         }
         return data
     
@@ -66,7 +92,7 @@ class scraper:
 def get_proxies():
     try:
         response = requests.get(
-            "https://proxy.webshare.io/api/v2/proxy/list/?mode=direct&page=1&page_size=25",
+            "https://proxy.webshare.io/api/v2/proxy/list/?mode=direct&page=1&page_size=100",
             headers={"Authorization": f"Token {TOKEN}"}
         )
         response.raise_for_status()  # Raise an HTTPError for bad responses
