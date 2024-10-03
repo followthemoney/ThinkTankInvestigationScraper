@@ -47,7 +47,7 @@ with pd.ExcelWriter("output-tmp.xlsx", engine='xlsxwriter') as writer:
                             entry[f'recent_{key}'] = recent
                             if one_recent:
                                 df.to_excel(writer, sheet_name=f"{id.replace('-','_')}_{key}", index=False)
-                                letter = 'P' if key == 'parl' else 'Q'
+                                letter = 'T' if key == 'parl' else 'U'
                                 link = {'from' : f'{letter}{line}',
                                         'to': f"{id.replace('-','_')}_{key}"}
                                 to_link.append(link)
@@ -76,6 +76,6 @@ for el in to_link:
 
 wb.save('output-tmp.xlsx')
 
-df_main.to_pickle('NEW_EU_TT.pkl')
+df_main.to_pickle('NEW_EU_TT2.pkl')
 
 
